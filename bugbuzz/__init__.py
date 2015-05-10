@@ -74,6 +74,8 @@ class BugBuzzClient(object):
         logger.info('Processing %s events from server ...', len(events))
         logger.debug('Events: %r', events)
         for event in events:
+            # TODO: process source code requests
+            # TODO: process other requests
             self.cmd_queue.put_nowait(event)
 
 
