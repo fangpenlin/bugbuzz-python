@@ -9,6 +9,7 @@ import logging
 import Queue
 
 # TODO: use a embedded requests package or use urllib instead?
+import py
 import requests
 
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ class BugBuzzClient(object):
         self.session_id = resp.json()['id']
         self.event_thread.start()
 
-    def add_break(self, filename, lineno):
+    def add_break(self, lineno, file_id):
         """Add a break to notify user we are waiting for commands
 
         """
@@ -55,11 +56,24 @@ class BugBuzzClient(object):
         resp = self.req_session.post(
             url,
             dict(
-                filename=filename,
                 lineno=lineno,
+                file_id=file_id,
             ),
         )
         resp.raise_for_status()
+
+    def upload_source(self, filename, content):
+        """Uplaod source code to server
+
+        """
+        url = self._api_url('sessions/{}/files'.format(self.session_id))
+        # TODO: what about encoding?
+        resp = self.req_session.post(
+            url,
+            files=dict(file=(filename, content)),
+        )
+        resp.raise_for_status()
+        return resp.json()['file']
 
     def poll_events(self):
         """Poll events from server in a thread
@@ -100,21 +114,43 @@ class BugBuzz(bdb.Bdb, object):
     def __init__(self, base_url):
         bdb.Bdb.__init__(self)
         self.client = BugBuzzClient(base_url)
+        # map filename to uploaded files
+        self.uploaded_sources = {}
+        # current py.code.Frame object
+        self.current_py_frame = None
+
+    def upload_source(self, py_frame):
+        """Upload source code if it is not available on server yet
+
+        """
+        filename = unicode(self.current_py_frame.code.path)
+        if filename in self.uploaded_sources:
+            return self.uploaded_sources[filename]
+        uploaded = self.client.upload_source(
+            filename=filename,
+            content=unicode(self.current_py_frame.code.fullsource)
+        )
+        self.uploaded_sources[filename] = uploaded
+        return uploaded
 
     def set_trace(self, frame):
+        self.current_py_frame = py.code.Frame(frame)
         self.client.start()
+        file_ = self.upload_source(self.current_py_frame)
         # TODO: handle filename is None or other situations?
         self.client.add_break(
-            filename=frame.f_code.co_filename,
-            lineno=frame.f_lineno,
+            file_id=file_['id'],
+            lineno=self.current_py_frame.lineno,
         )
         bdb.Bdb.set_trace(self, frame)
 
     def interaction(self, frame, traceback=None):
+        self.current_py_frame = py.code.Frame(frame)
+        file_ = self.upload_source(self.current_py_frame)
         # TODO: handle filename is None or other situations?
         self.client.add_break(
-            filename=frame.f_code.co_filename,
-            lineno=frame.f_lineno,
+            file_id=file_['id'],
+            lineno=self.current_py_frame.lineno,
         )
         
         cmd = self.client.cmd_queue.get(True)

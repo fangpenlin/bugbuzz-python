@@ -31,6 +31,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'requests',
+        'py',
     ],
     extras_require=dict(
         tests=tests_require,
