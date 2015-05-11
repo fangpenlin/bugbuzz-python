@@ -42,9 +42,24 @@ class BugBuzzClient(object):
     def start(self):
         # talk to server, register debugging session
         resp = self.req_session.post(self._api_url('sessions'))
+        resp.raise_for_status()
         # TODO: handle error
         self.session_id = resp.json()['id']
         self.event_thread.start()
+
+    def add_break(self, filename, lineno):
+        """Add a break to notify user we are waiting for commands
+
+        """
+        url = self._api_url('sessions/{}/breaks'.format(self.session_id))
+        resp = self.req_session.post(
+            url,
+            dict(
+                filename=filename,
+                lineno=lineno,
+            ),
+        )
+        resp.raise_for_status()
 
     def poll_events(self):
         """Poll events from server in a thread
@@ -59,6 +74,7 @@ class BugBuzzClient(object):
                     last_timestamp=self.last_timestamp
                 ))
             resp = self.req_session.get(url)
+            resp.raise_for_status()
             # TODO: use a better manner to handle long polling
             events = resp.json()['events']
             if not events:
@@ -84,9 +100,23 @@ class BugBuzz(bdb.Bdb, object):
     def __init__(self, base_url):
         bdb.Bdb.__init__(self)
         self.client = BugBuzzClient(base_url)
+
+    def set_trace(self, frame):
         self.client.start()
+        # TODO: handle filename is None or other situations?
+        self.client.add_break(
+            filename=frame.f_code.co_filename,
+            lineno=frame.f_lineno,
+        )
+        bdb.Bdb.set_trace(self, frame)
 
     def interaction(self, frame, traceback=None):
+        # TODO: handle filename is None or other situations?
+        self.client.add_break(
+            filename=frame.f_code.co_filename,
+            lineno=frame.f_lineno,
+        )
+        
         cmd = self.client.cmd_queue.get(True)
         cmd_type = cmd['type']
         if cmd_type == 'next':
