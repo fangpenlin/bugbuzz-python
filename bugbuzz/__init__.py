@@ -102,21 +102,33 @@ class BugBuzz(bdb.Bdb, object):
         that we ever need to stop in this function.
 
         """
-        logger.debug('User call')
+        logger.debug(
+            'User call, %s:%s',
+            frame.f_code.co_filename,
+            frame.f_lineno
+        )
         self.interaction(frame)
 
     def user_line(self, frame):
         """This method is called when we stop or break at this line.
 
         """
-        logger.debug('User line')
+        logger.debug(
+            'User line, %s:%s',
+            frame.f_code.co_filename,
+            frame.f_lineno
+        )
         self.interaction(frame)
 
     def user_return(self, frame, return_value):
         """This method is called when a return trap is set here.
 
         """
-        logger.debug('User return')
+        logger.debug(
+            'User return, %s:%s',
+            frame.f_code.co_filename,
+            frame.f_lineno
+        )
         self.interaction(frame)
 
     def user_exception(self, frame, exc_info):
@@ -124,7 +136,11 @@ class BugBuzz(bdb.Bdb, object):
         but only if we are to stop at or just below this level.
 
         """
-        logger.debug('User exception')
+        logger.debug(
+            'User exception, %s:%s',
+            frame.f_code.co_filename,
+            frame.f_lineno
+        )
         exc_type, exc_value, exc_traceback = exc_info
         self.interaction(frame, exc_traceback)
 

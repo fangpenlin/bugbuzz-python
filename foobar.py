@@ -1,12 +1,9 @@
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logging.getLogger('requests').setLevel(logging.WARN)
 
-def foo(bar):
-    print bar
-
-num = 123
-
-print num
 import bugbuzz; bugbuzz.set_trace()
-#import pdb; pdb.set_trace()
 
-foo('xxx')
-print num * 10
+friends = ['john', 'pat', 'gary', 'michael']
+for i, name in enumerate(friends):
+    print "iteration {iteration} is {name}".format(iteration=i, name=name)
