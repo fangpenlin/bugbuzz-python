@@ -52,6 +52,7 @@ class BugBuzzClient(object):
         """Add a break to notify user we are waiting for commands
 
         """
+        logger.info('Add break lineno=%s, file_id=%s', lineno, file_id)
         url = self._api_url('sessions/{}/breaks'.format(self.session_id))
         resp = self.req_session.post(
             url,
@@ -126,9 +127,12 @@ class BugBuzz(bdb.Bdb, object):
         filename = unicode(self.current_py_frame.code.path)
         if filename in self.uploaded_sources:
             return self.uploaded_sources[filename]
+        logger.info('Uploading %s', filename)
+        ss = self.current_py_frame.code.fullsource
+        # import ipdb; ipdb.set_trace()
         uploaded = self.client.upload_source(
             filename=filename,
-            content=unicode(self.current_py_frame.code.fullsource)
+            content=str(self.current_py_frame.code.fullsource).decode('utf8')
         )
         self.uploaded_sources[filename] = uploaded
         return uploaded
@@ -140,7 +144,7 @@ class BugBuzz(bdb.Bdb, object):
         # TODO: handle filename is None or other situations?
         self.client.add_break(
             file_id=file_['id'],
-            lineno=self.current_py_frame.lineno,
+            lineno=self.current_py_frame.lineno + 1,
         )
         bdb.Bdb.set_trace(self, frame)
 
@@ -150,7 +154,7 @@ class BugBuzz(bdb.Bdb, object):
         # TODO: handle filename is None or other situations?
         self.client.add_break(
             file_id=file_['id'],
-            lineno=self.current_py_frame.lineno,
+            lineno=self.current_py_frame.lineno + 1,
         )
         
         cmd = self.client.cmd_queue.get(True)
