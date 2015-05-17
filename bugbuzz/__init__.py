@@ -128,8 +128,6 @@ class BugBuzz(bdb.Bdb, object):
         if filename in self.uploaded_sources:
             return self.uploaded_sources[filename]
         logger.info('Uploading %s', filename)
-        ss = self.current_py_frame.code.fullsource
-        # import ipdb; ipdb.set_trace()
         uploaded = self.client.upload_source(
             filename=filename,
             content=str(self.current_py_frame.code.fullsource).decode('utf8')
@@ -159,7 +157,9 @@ class BugBuzz(bdb.Bdb, object):
         
         cmd = self.client.cmd_queue.get(True)
         cmd_type = cmd['type']
-        if cmd_type == 'next':
+        if cmd_type == 'return':
+            self.set_return(frame)
+        elif cmd_type == 'next':
             self.set_next(frame)
         elif cmd_type == 'step':
             self.set_step()
