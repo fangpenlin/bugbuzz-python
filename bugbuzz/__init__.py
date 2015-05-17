@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import os
 import sys
 import bdb
 import time
@@ -6,6 +7,7 @@ import threading
 import urlparse
 import urllib
 import logging
+import webbrowser
 import Queue
 
 # TODO: use a embedded requests package or use urllib instead?
@@ -112,8 +114,9 @@ class BugBuzzClient(object):
 
 class BugBuzz(bdb.Bdb, object):
 
-    def __init__(self, base_url):
+    def __init__(self, base_url, dashboard_url):
         bdb.Bdb.__init__(self)
+        self.dashboard_url = dashboard_url
         self.client = BugBuzzClient(base_url)
         # map filename to uploaded files
         self.uploaded_sources = {}
@@ -138,6 +141,11 @@ class BugBuzz(bdb.Bdb, object):
     def set_trace(self, frame):
         self.current_py_frame = py.code.Frame(frame)
         self.client.start()
+        session_url = urlparse.urljoin(
+            self.dashboard_url,
+            '/sessions/{}'.format(self.client.session_id)
+        )
+        webbrowser.open_new_tab(session_url)
         file_ = self.upload_source(self.current_py_frame)
         # TODO: handle filename is None or other situations?
         self.client.add_break(
@@ -216,4 +224,9 @@ class BugBuzz(bdb.Bdb, object):
 
 
 def set_trace():
-    BugBuzz('http://127.0.0.1:9090').set_trace(sys._getframe().f_back)
+    api_url = os.getenv('BUGBUZZ_API', 'https://bugbuzz-api.herokuapp.com')
+    db_url = os.getenv(
+        'BUGBUZZ_DASHBOARD',
+        'http://dashboard.bugbuzz.io/'
+    )
+    BugBuzz(api_url, db_url).set_trace(sys._getframe().f_back)
