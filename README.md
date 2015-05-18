@@ -2,6 +2,16 @@
 
 ![Bugbuzz demo](/demo.gif?raw=true )
 
+# Dashboard shortcuts
+
+Vim style shortcuts
+
+ - C Continue
+ - H Return
+ - J Next
+ - L Step
+
+
 # Usage:
 
 This is still a prototype stage service, you clone it
