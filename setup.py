@@ -30,7 +30,6 @@ setup(
     version=version,
     packages=find_packages(),
     install_requires=[
-        'requests',
         'py',
     ],
     extras_require=dict(
