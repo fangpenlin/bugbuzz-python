@@ -110,7 +110,12 @@ class BugBuzz(bdb.Bdb, object):
 
         """
         def strip(value):
-            return repr(value)[:cls.VAR_VALUE_TRUNCATE_SIZE]
+            try:
+                return repr(value)[:cls.VAR_VALUE_TRUNCATE_SIZE]
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except Exception:
+                return '<Error>'
         return dict((key, strip(value)) for key, value in vars.iteritems())
 
     def __init__(self, base_url, dashboard_url):
