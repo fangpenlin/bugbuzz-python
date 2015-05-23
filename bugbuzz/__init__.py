@@ -10,8 +10,7 @@ import logging
 import webbrowser
 import Queue
 
-# TODO: use a embedded requests package or use urllib instead?
-import py
+from .packages import py
 from .packages import requests
 
 logger = logging.getLogger(__name__)

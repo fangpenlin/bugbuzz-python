@@ -12,12 +12,7 @@ except ImportError:
 
 
 tests_require = [
-    'nose',
-    'nose-cov',
     'mock',
-    'webtest',
-    'WSGIProxy2',
-    'requests',
     'pytest',
     'pytest-cov',
     'pytest-xdist',
@@ -30,7 +25,6 @@ setup(
     version=version,
     packages=find_packages(),
     install_requires=[
-        'py',
     ],
     extras_require=dict(
         tests=tests_require,
