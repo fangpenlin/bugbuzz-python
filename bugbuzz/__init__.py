@@ -114,6 +114,8 @@ class BugBuzzClient(object):
 
 class BugBuzz(bdb.Bdb, object):
 
+    QUEUE_POLLING_TIMEOUT = 10
+
     def __init__(self, base_url, dashboard_url):
         bdb.Bdb.__init__(self)
         self.dashboard_url = dashboard_url
@@ -163,7 +165,19 @@ class BugBuzz(bdb.Bdb, object):
             lineno=self.current_py_frame.lineno + 1,
         )
         
-        cmd = self.client.cmd_queue.get(True)
+        cmd = None
+        while cmd is None:
+            try:
+                # Notice: we need to specify a timeout, otherwise the get
+                # operation cannot be interrupted
+                cmd = self.client.cmd_queue.get(
+                    True,
+                    self.QUEUE_POLLING_TIMEOUT,
+                )
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except Queue.Empty:
+                continue
         cmd_type = cmd['type']
         if cmd_type == 'return':
             self.set_return(frame)
@@ -173,7 +187,6 @@ class BugBuzz(bdb.Bdb, object):
             self.set_step()
         elif cmd_type == 'continue':
             self.set_continue()
-        # TODO:
 
     def user_call(self, frame, argument_list):
         """This method is called when there is the remote possibility
