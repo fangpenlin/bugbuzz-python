@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import os
 import sys
 import bdb
+import json
 import urlparse
 import logging
 import webbrowser
@@ -56,7 +57,7 @@ class BugBuzzClient(object):
             callback=self.process_event,
         )
 
-    def add_break(self, lineno, file_id):
+    def add_break(self, lineno, file_id, local_vars):
         """Add a break to notify user we are waiting for commands
 
         """
@@ -64,10 +65,12 @@ class BugBuzzClient(object):
         url = self._api_url('sessions/{}/breaks'.format(self.session_id))
         resp = self.req_session.post(
             url,
-            dict(
+            json.dumps(dict(
                 lineno=lineno,
                 file_id=file_id,
-            ),
+                local_vars=local_vars,
+            )),
+            headers={b'Content-Type': b'application/json'},
         )
         resp.raise_for_status()
 
@@ -98,6 +101,17 @@ class BugBuzzClient(object):
 class BugBuzz(bdb.Bdb, object):
 
     QUEUE_POLLING_TIMEOUT = 10
+
+    VAR_VALUE_TRUNCATE_SIZE = 1024
+
+    @classmethod
+    def dump_vars(cls, vars):
+        """Dump vars dict as name to repr string
+
+        """
+        def strip(value):
+            return repr(value)[:cls.VAR_VALUE_TRUNCATE_SIZE]
+        return dict((key, strip(value)) for key, value in vars.iteritems())
 
     def __init__(self, base_url, dashboard_url):
         bdb.Bdb.__init__(self)
@@ -136,6 +150,7 @@ class BugBuzz(bdb.Bdb, object):
         self.client.add_break(
             file_id=file_['id'],
             lineno=self.current_py_frame.lineno + 1,
+            local_vars=self.dump_vars(self.current_py_frame.f_locals),
         )
         bdb.Bdb.set_trace(self, frame)
 
@@ -146,6 +161,7 @@ class BugBuzz(bdb.Bdb, object):
         self.client.add_break(
             file_id=file_['id'],
             lineno=self.current_py_frame.lineno + 1,
+            local_vars=self.dump_vars(self.current_py_frame.f_locals),
         )
         
         cmd = None
