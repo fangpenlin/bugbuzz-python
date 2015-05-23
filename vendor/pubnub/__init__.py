@@ -24,8 +24,6 @@ import sys
 from base64 import urlsafe_b64encode
 from base64 import encodestring, decodestring
 import hmac
-from Crypto.Cipher import AES
-from Crypto.Hash import MD5
 
 
 try:
@@ -47,8 +45,8 @@ except ImportError:
     import urllib2
 
 try:
-    import requests
-    from requests.adapters import HTTPAdapter
+    from .. import requests
+    from ..requests.adapters import HTTPAdapter
 except ImportError:
     pass
 
@@ -85,9 +83,9 @@ elif sys.platform.startswith("darwin"):
         # Send first keepalive packet 200 seconds after last data packet
         (socket.IPPROTO_TCP, socket.TCP_KEEPALIVE, 200),
         # Resend keepalive packets every second, when unanswered
-        (socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 1),
+        #(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 1),
         # Close the socket after 5 unanswered keepalive packets
-        (socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 5)
+        #(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 5)
     ]
 """
 # The Windows code is currently untested
@@ -207,6 +205,7 @@ class PubnubCrypto2():
         return hashlib.sha256(key).hexdigest()
 
     def encrypt(self, key, msg):
+        from Crypto.Cipher import AES
         secret = self.getSecret(key)
         Initial16bytes = '0123456789012345'
         cipher = AES.new(secret[0:32], AES.MODE_CBC, Initial16bytes)
@@ -214,7 +213,7 @@ class PubnubCrypto2():
         return enc
 
     def decrypt(self, key, msg):
-
+        from Crypto.Cipher import AES
         try:
             secret = self.getSecret(key)
             Initial16bytes = '0123456789012345'
@@ -243,7 +242,7 @@ class PubnubCrypto3():
         return hashlib.sha256(key.encode("utf-8")).hexdigest()
 
     def encrypt(self, key, msg):
-
+        from Crypto.Cipher import AES
         secret = self.getSecret(key)
         Initial16bytes = '0123456789012345'
         cipher = AES.new(secret[0:32], AES.MODE_CBC, Initial16bytes)
@@ -251,7 +250,7 @@ class PubnubCrypto3():
             cipher.encrypt(self.pad(msg.encode('utf-8')))).decode('utf-8')
 
     def decrypt(self, key, msg):
-
+        from Crypto.Cipher import AES
         secret = self.getSecret(key)
         Initial16bytes = '0123456789012345'
         cipher = AES.new(secret[0:32], AES.MODE_CBC, Initial16bytes)

@@ -1,6 +1,6 @@
 # Bugbuzz - easy to use online debugger
 
-![Bugbuzz demo](/demo.gif?raw=true )
+![Bugbuzz demo](/screencast.gif?raw=true )
 
 # Dashboard shortcuts
 

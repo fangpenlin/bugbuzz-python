@@ -2,16 +2,14 @@ from __future__ import unicode_literals
 import os
 import sys
 import bdb
-import time
-import threading
 import urlparse
-import urllib
 import logging
 import webbrowser
 import Queue
 
 from .packages import py
 from .packages import requests
+from .packages import pubnub
 
 logger = logging.getLogger(__name__)
 
@@ -26,13 +24,12 @@ class BugBuzzClient(object):
         self.running = True
         # requests session
         self.req_session = requests.Session()
+        self.pubnub = None
         # debugging session ID
         self.session_id = None
         # last event timestamp
         self.last_timestamp = None
         # thread for polling events from server
-        self.event_thread = threading.Thread(target=self.poll_events)
-        self.event_thread.daemon = True
         self.cmd_queue = Queue.Queue()
 
     def _api_url(self, path):
@@ -46,8 +43,18 @@ class BugBuzzClient(object):
         resp = self.req_session.post(self._api_url('sessions'))
         resp.raise_for_status()
         # TODO: handle error
-        self.session_id = resp.json()['id']
-        self.event_thread.start()
+        session = resp.json()['session']
+        self.session_id = session['id']
+        self.pubnub = pubnub.Pubnub(
+            publish_key='',
+            subscribe_key=session['pubnub_subscribe_key'],
+            ssl_on=True,
+            daemon=True,
+        )
+        self.pubnub.subscribe(
+            session['client_channel'],
+            callback=self.process_event,
+        )
 
     def add_break(self, lineno, file_id):
         """Add a break to notify user we are waiting for commands
@@ -77,38 +84,15 @@ class BugBuzzClient(object):
         resp.raise_for_status()
         return resp.json()['file']
 
-    def poll_events(self):
-        """Poll events from server in a thread
-
-        """
-        while self.running:
-            # TODO: set timeout here
-            # TODO: handle errors
-            url = self._api_url('sessions/{}/events'.format(self.session_id))
-            if self.last_timestamp is not None:
-                url += '?' + urllib.urlencode(dict(
-                    last_timestamp=self.last_timestamp
-                ))
-            resp = self.req_session.get(url)
-            resp.raise_for_status()
-            # TODO: use a better manner to handle long polling
-            events = resp.json()['events']
-            if not events:
-                time.sleep(1)
-                continue
-            self.process_events(events)
-            self.last_timestamp = events[-1]['created_at']
-
-    def process_events(self, events):
+    def process_event(self, message, channel):
         """Process events from the server
 
         """
-        logger.info('Processing %s events from server ...', len(events))
-        logger.debug('Events: %r', events)
-        for event in events:
-            # TODO: process source code requests
-            # TODO: process other requests
-            self.cmd_queue.put_nowait(event)
+        event = message['event']
+        logger.debug('Events: %r', event)
+        # TODO: process source code requests
+        # TODO: process other requests
+        self.cmd_queue.put_nowait(event)
 
 
 class BugBuzz(bdb.Bdb, object):
