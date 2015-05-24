@@ -7,6 +7,7 @@ import logging
 import os
 import Queue
 import sys
+import urllib
 import urlparse
 import uuid
 import webbrowser
@@ -207,9 +208,9 @@ class BugBuzz(bdb.Bdb, object):
         access_key = base64.urlsafe_b64encode(self.client.aes_key)
         session_url = urlparse.urljoin(
             self.dashboard_url,
-            '/#/sessions/{}/access-key/{}'.format(
+            '/#/sessions/{}?{}'.format(
                 self.client.session_id,
-                access_key,
+                urllib.urlencode(dict(access_key=access_key)),
             )
         )
         print >>sys.stderr, 'Access Key:', access_key
