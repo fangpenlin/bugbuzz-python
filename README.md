@@ -34,10 +34,10 @@ then
 python demo.py
 ```
 
-It will oepn a new tab in your browser for debugging.
+It will open a new tab in your browser for debugging.
 
 Notice:
 
- - This is just a prototype, use it onw your own risk
+ - This is just a prototype, use it at your own risk
  - The source code you are debugging (encountered breakpoints or pause) will be uploaded to the server
  - Safari is not working for an issue, use Chrome instead
