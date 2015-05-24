@@ -1,21 +1,50 @@
 from __future__ import unicode_literals
-import os
-import sys
+
+import base64
 import bdb
 import json
-import urlparse
 import logging
-import webbrowser
+import os
 import Queue
+import sys
+import urlparse
+import uuid
+import webbrowser
 
+from Crypto import Random
+from Crypto.Cipher import AES
+
+from .packages import pubnub
 from .packages import py
 from .packages import requests
-from .packages import pubnub
 
 logger = logging.getLogger(__name__)
 
+__version__ = '0.0.1'
+
+BLOCK_SIZE = 16
+
+
+def pkcs5_pad(string):
+    """Do PKCS5 padding to string and return
+
+    """
+    return (
+        string +
+        (BLOCK_SIZE - len(string) % BLOCK_SIZE) *
+        chr(BLOCK_SIZE - len(string) % BLOCK_SIZE)
+    )
+
+
+def pkcs5_unpad(string):
+    """Do PKCS5 unpadding to string and return
+
+    """
+    return string[0:-ord(string[-1])]
+
 
 class BugBuzzClient(object):
+
     """BugBuzzClient talks to BugBuzz server and response commands
 
     """
@@ -32,6 +61,9 @@ class BugBuzzClient(object):
         self.last_timestamp = None
         # thread for polling events from server
         self.cmd_queue = Queue.Queue()
+        # generate AES encryption key
+        self.rndfile = Random.new()
+        self.aes_key = self.rndfile.read(32)
 
     def _api_url(self, path):
         """API URL for path
@@ -39,9 +71,30 @@ class BugBuzzClient(object):
         """
         return urlparse.urljoin(self.base_url, path)
 
+    def encrypt(self, content):
+        """Encrypt a given content and return (iv, encrypted content)
+
+        """
+        iv = self.rndfile.read(16)
+        aes = AES.new(self.aes_key, AES.MODE_CBC, iv)
+        return iv, aes.encrypt(pkcs5_pad(content))
+
     def start(self):
+        # validation code is for validating given access key correct or not
+        validation_code = uuid.uuid4().hex
+        iv, encrypted_code = self.encrypt(validation_code)
         # talk to server, register debugging session
-        resp = self.req_session.post(self._api_url('sessions'))
+        resp = self.req_session.post(
+            self._api_url('sessions'),
+            dict(
+                encrypted='true',
+                validation_code=validation_code,
+            ),
+            files=dict(
+                encrypted_code=('encrypted_code', encrypted_code),
+                aes_iv=('aes_iv', iv),
+            ),
+        )
         resp.raise_for_status()
         # TODO: handle error
         session = resp.json()['session']
@@ -63,14 +116,17 @@ class BugBuzzClient(object):
         """
         logger.info('Add break lineno=%s, file_id=%s', lineno, file_id)
         url = self._api_url('sessions/{}/breaks'.format(self.session_id))
+        iv, encrpyted = self.encrypt(json.dumps(local_vars))
         resp = self.req_session.post(
             url,
-            json.dumps(dict(
-                lineno=lineno,
+            dict(
+                lineno=str(lineno),
                 file_id=file_id,
-                local_vars=local_vars,
-            )),
-            headers={b'Content-Type': b'application/json'},
+            ),
+            files=dict(
+                local_vars=('local_vars', encrpyted),
+                aes_iv=('aes_iv', iv),
+            ),
         )
         resp.raise_for_status()
 
@@ -79,10 +135,13 @@ class BugBuzzClient(object):
 
         """
         url = self._api_url('sessions/{}/files'.format(self.session_id))
-        # TODO: what about encoding?
+        iv, encrpyted = self.encrypt(content)
         resp = self.req_session.post(
             url,
-            files=dict(file=(filename, content)),
+            files=dict(
+                file=(filename, encrpyted),
+                aes_iv=('aes_iv', iv),
+            ),
         )
         resp.raise_for_status()
         return resp.json()['file']
@@ -137,7 +196,7 @@ class BugBuzz(bdb.Bdb, object):
         logger.info('Uploading %s', filename)
         uploaded = self.client.upload_source(
             filename=filename,
-            content=str(self.current_py_frame.code.fullsource).decode('utf8')
+            content=str(self.current_py_frame.code.fullsource)
         )
         self.uploaded_sources[filename] = uploaded
         return uploaded
@@ -145,10 +204,16 @@ class BugBuzz(bdb.Bdb, object):
     def set_trace(self, frame):
         self.current_py_frame = py.code.Frame(frame)
         self.client.start()
+        access_key = base64.urlsafe_b64encode(self.client.aes_key)
         session_url = urlparse.urljoin(
             self.dashboard_url,
-            '/sessions/{}'.format(self.client.session_id)
+            '/#/sessions/{}/access-key/{}'.format(
+                self.client.session_id,
+                access_key,
+            )
         )
+        print >>sys.stderr, 'Access Key:', access_key
+        print >>sys.stderr, 'Dashboard URL:', session_url
         webbrowser.open_new_tab(session_url)
         file_ = self.upload_source(self.current_py_frame)
         # TODO: handle filename is None or other situations?
@@ -168,7 +233,7 @@ class BugBuzz(bdb.Bdb, object):
             lineno=self.current_py_frame.lineno + 1,
             local_vars=self.dump_vars(self.current_py_frame.f_locals),
         )
-        
+
         cmd = None
         while cmd is None:
             try:
