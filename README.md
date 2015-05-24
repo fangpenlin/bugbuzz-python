@@ -40,4 +40,3 @@ Notice:
 
  - This is just a prototype, use it at your own risk
  - The source code you are debugging (encountered breakpoints or pause) will be uploaded to the server
- - Safari is not working for an issue, use Chrome instead
