@@ -25,7 +25,7 @@ import bugbuzz; bugbuzz.set_trace()
 
 # Security concern
 
-As bugbuzz providing debugging in a software-as-service manner, all source code and local variables will be uploaded to the server. However, when a debuggin session created, a random secret access key will be generated, and used for encryping all source code and local variables. The access key will be passed to dashboard as part of hash tag like this
+As bugbuzz providing debugging in a software-as-service manner, all source code and local variables needed will be uploaded to the server. However, when a debuggin session created, a random secret access key will be generated, and used for encryping all source code and local variables. The access key will be passed to dashboard as part of hash tag like this
 
 ```
 http://dashboard.bugbuzz.io/#/sessions/SECsLArhHBVHF5mrtvXHVp3T?access_key=<ACCESS KEY>
