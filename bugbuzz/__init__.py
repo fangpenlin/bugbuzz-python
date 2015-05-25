@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import base64
 import bdb
+import inspect
 import json
 import logging
 import os
@@ -16,7 +17,6 @@ from Crypto import Random
 from Crypto.Cipher import AES
 
 from .packages import pubnub
-from .packages import py
 from .packages import requests
 
 logger = logging.getLogger(__name__)
@@ -184,26 +184,28 @@ class BugBuzz(bdb.Bdb, object):
         self.client = BugBuzzClient(base_url)
         # map filename to uploaded files
         self.uploaded_sources = {}
-        # current py.code.Frame object
-        self.current_py_frame = None
+        # current frame object
+        self.current_frame = None
 
-    def upload_source(self, py_frame):
+    def upload_source(self, frame):
         """Upload source code if it is not available on server yet
 
         """
-        filename = unicode(self.current_py_frame.code.path)
+        # TODO: what if the filename is not unicode?
+        filename = unicode(frame.f_code.co_filename)
         if filename in self.uploaded_sources:
             return self.uploaded_sources[filename]
         logger.info('Uploading %s', filename)
+        source_lines, _ = inspect.findsource(frame.f_code)
         uploaded = self.client.upload_source(
             filename=filename,
-            content=str(self.current_py_frame.code.fullsource)
+            content=b''.join(source_lines),
         )
         self.uploaded_sources[filename] = uploaded
         return uploaded
 
     def set_trace(self, frame):
-        self.current_py_frame = py.code.Frame(frame)
+        self.current_frame = frame
         self.client.start()
         access_key = base64.urlsafe_b64encode(self.client.aes_key)
         session_url = urlparse.urljoin(
@@ -216,23 +218,23 @@ class BugBuzz(bdb.Bdb, object):
         print >>sys.stderr, 'Access Key:', access_key
         print >>sys.stderr, 'Dashboard URL:', session_url
         webbrowser.open_new_tab(session_url)
-        file_ = self.upload_source(self.current_py_frame)
+        file_ = self.upload_source(self.current_frame)
         # TODO: handle filename is None or other situations?
         self.client.add_break(
             file_id=file_['id'],
-            lineno=self.current_py_frame.lineno + 1,
-            local_vars=self.dump_vars(self.current_py_frame.f_locals),
+            lineno=self.current_frame.f_lineno,
+            local_vars=self.dump_vars(self.current_frame.f_locals),
         )
         bdb.Bdb.set_trace(self, frame)
 
     def interaction(self, frame, traceback=None):
-        self.current_py_frame = py.code.Frame(frame)
-        file_ = self.upload_source(self.current_py_frame)
+        self.current_frame = frame
+        file_ = self.upload_source(self.current_frame)
         # TODO: handle filename is None or other situations?
         self.client.add_break(
             file_id=file_['id'],
-            lineno=self.current_py_frame.lineno + 1,
-            local_vars=self.dump_vars(self.current_py_frame.f_locals),
+            lineno=self.current_frame.f_lineno,
+            local_vars=self.dump_vars(self.current_frame.f_locals),
         )
 
         cmd = None
