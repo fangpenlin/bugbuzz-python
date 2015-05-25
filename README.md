@@ -23,6 +23,16 @@ then insert following lines in your code to debug
 import bugbuzz; bugbuzz.set_trace()
 ```
 
+# Security concern
+
+As bugbuzz providing debugging in a software-as-service manner, all source code and local variables will be uploaded to the server. However, when a debuggin session created, a random secret access key will be generated, and used for encryping all source code and local variables. The access key will be passed to dashboard as part of hash tag like this
+
+```
+http://dashboard.bugbuzz.io/#/sessions/SECsLArhHBVHF5mrtvXHVp3T?access_key=<ACCESS KEY>
+```
+
+As the server side cannot see this access key, namely, your source code and local variables are not visible by the server.
+
 # Run demo
 
 To run our demo
@@ -55,5 +65,4 @@ It will open a new tab in your browser for debugging.
 
 # Notice
 
- - This is just a prototype, use it at your own risk
- - The source code and local variables you are debugging (encountered breakpoints or pause) will be uploaded to the server, but they will be **encrypted**, then decrypted on the dashboard, nobody can know the content without the access key.
+ This is just a prototype, use it at your own risk
