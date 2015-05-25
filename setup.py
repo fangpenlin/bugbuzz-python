@@ -22,6 +22,12 @@ tests_require = [
 
 setup(
     name='bugbuzz',
+    author='Victor Lin',
+    author_email='hello@victorlin.me',
+    url='https://github.com/victorlin/bugbuzz-python',
+    description='Easy to use web-base online debugger',
+    keywords='debugger debug pdb',
+    license='MIT',
     version=version,
     packages=find_packages(),
     install_requires=[
