@@ -31,7 +31,7 @@ As bugbuzz providing debugging in a software-as-service manner, all source code 
 http://dashboard.bugbuzz.io/#/sessions/SECsLArhHBVHF5mrtvXHVp3T?access_key=<ACCESS KEY>
 ```
 
-As the server side cannot see this access key, namely, your source code and local variables are not visible by the server.
+With the access key, the Ember.js dashboard app can then decrypt the source code and local variables downloaded from the server. As the access key passed as part of hash in the URL, the server cannot see it, without the access key, your source code and local variables are not visible by the server.
 
 # Run demo
 
