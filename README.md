@@ -25,13 +25,13 @@ import bugbuzz; bugbuzz.set_trace()
 
 # Security concern
 
-As bugbuzz providing debugging in a software-as-service manner, all source code and local variables needed will be uploaded to the server. However, when a debugging session created, a random secret access key will be generated, and used for encryping all source code and local variables. The access key will be passed to dashboard as part of hash tag like this
+As bugbuzz providing debugging in a software-as-service manner, all source code and local variables needed will be uploaded to the server. However, when a debugging session created, a random secret access key will be generated, and used for encryping all source code and local variables. The access key will be passed to dashboard as a part of hash tag like this
 
 ```
 http://dashboard.bugbuzz.io/#/sessions/SECsLArhHBVHF5mrtvXHVp3T?access_key=<ACCESS KEY>
 ```
 
-With the access key, the Ember.js dashboard app can then decrypt the source code and local variables downloaded from the server. As the access key passed as part of hash in the URL, the server cannot see it, without the access key, your source code and local variables are not visible by the server.
+With the access key, the Ember.js dashboard app can then decrypt the source code and local variables downloaded from the server. As the access key is passed as part of hash in the URL, the server cannot see it, without the access key, your source code and local variables are not visible by the server.
 
 # Run demo
 
