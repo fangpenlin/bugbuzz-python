@@ -11,21 +11,38 @@ Vim style shortcuts
  - J Next
  - L Step
 
+# Usage
 
-# Usage:
+```
+pip install bugbuzz
+```
 
-This is still a prototype stage service, you clone it
+then insert following lines in your code to debug
+
+```
+import bugbuzz; bugbuzz.set_trace()
+```
+
+# Run demo
+
+To run our demo
 
 ```
 git clone git@github.com:victorlin/bugbuzz-python.git
 ```
 
-run
+install the project
 
 ```
 virtualenv --no-site-packages .env
 source .env/bin/activate
 pip install -e .
+```
+
+and dependency used in the `demo.py`
+
+```
+pip install requests
 ```
 
 then
