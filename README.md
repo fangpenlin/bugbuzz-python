@@ -19,7 +19,7 @@ pip install bugbuzz
 
 then insert following lines in your code to debug
 
-```
+```python
 import bugbuzz; bugbuzz.set_trace()
 ```
 
@@ -37,13 +37,13 @@ With the access key, the Ember.js dashboard app can then decrypt the source code
 
 To run our demo
 
-```
+```bash
 git clone git@github.com:victorlin/bugbuzz-python.git
 ```
 
 install the project
 
-```
+```bash
 virtualenv --no-site-packages .env
 source .env/bin/activate
 pip install -e .
@@ -51,13 +51,13 @@ pip install -e .
 
 and dependency used in the `demo.py`
 
-```
+```bash
 pip install requests
 ```
 
 then
 
-```
+```bash
 python demo.py
 ```
 
