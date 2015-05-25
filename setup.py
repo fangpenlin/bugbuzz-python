@@ -30,6 +30,9 @@ setup(
     license='MIT',
     version=version,
     packages=find_packages(),
+    package_data={'': ['LICENSE'], 'bugbuzz/packages/requests': ['*.pem']},
+    include_package_data=True,
+    zip_safe=False,
     install_requires=[
         'pycrypto',
     ],
