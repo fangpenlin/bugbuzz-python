@@ -37,6 +37,8 @@ http://dashboard.bugbuzz.io/#/sessions/SECsLArhHBVHF5mrtvXHVp3T?access_key=<ACCE
 
 With the access key, the Ember.js dashboard app can then decrypt the source code and local variables downloaded from the server. As the access key is passed as part of hash in the URL, the server cannot see it, without the access key, your source code and local variables are not visible by the server.
 
+For more details about security topic, you can also read my article [Anonymous computing: Peer-to-peer encryption with Ember.js](http://victorlin.me/posts/2015/05/26/anonymous-computing-peer-to-peer-encryption-with-ember-js).
+
 # Run demo
 
 To run our demo
