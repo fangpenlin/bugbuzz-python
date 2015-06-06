@@ -2,6 +2,10 @@
 
 ![Bugbuzz demo](/screencast.gif?raw=true )
 
+# Ember.js Dashboard project
+
+https://github.com/victorlin/bugbuzz-python
+
 # Dashboard shortcuts
 
 Vim style shortcuts
