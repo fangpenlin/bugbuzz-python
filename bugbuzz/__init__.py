@@ -1,19 +1,21 @@
 from __future__ import unicode_literals
 
+from future.standard_library import install_aliases
+install_aliases()
+
 import base64
 import bdb
 import inspect
 import json
 import logging
 import os
-import Queue
 import sys
 import urllib
-import urlparse
 import uuid
 import webbrowser
+import queue
+from urllib import parse as urlparse
 
-from Crypto import Random
 from Crypto.Cipher import AES
 
 from .packages import pubnub
@@ -26,22 +28,15 @@ __version__ = '0.0.3'
 BLOCK_SIZE = 16
 
 
-def pkcs5_pad(string):
-    """Do PKCS5 padding to string and return
+def pkcs5_pad(data):
+    """Do PKCS5 padding to data and return
 
     """
     return (
-        string +
-        (BLOCK_SIZE - len(string) % BLOCK_SIZE) *
-        chr(BLOCK_SIZE - len(string) % BLOCK_SIZE)
+        data +
+        (BLOCK_SIZE - len(data) % BLOCK_SIZE) *
+        chr(BLOCK_SIZE - len(data) % BLOCK_SIZE).encode('latin1')
     )
-
-
-def pkcs5_unpad(string):
-    """Do PKCS5 unpadding to string and return
-
-    """
-    return string[0:-ord(string[-1])]
 
 
 class BugBuzzClient(object):
@@ -61,10 +56,9 @@ class BugBuzzClient(object):
         # last event timestamp
         self.last_timestamp = None
         # thread for polling events from server
-        self.cmd_queue = Queue.Queue()
+        self.cmd_queue = queue.Queue()
         # generate AES encryption key
-        self.rndfile = Random.new()
-        self.aes_key = self.rndfile.read(32)
+        self.aes_key = os.urandom(32)
 
     def _api_url(self, path):
         """API URL for path
@@ -76,7 +70,7 @@ class BugBuzzClient(object):
         """Encrypt a given content and return (iv, encrypted content)
 
         """
-        iv = self.rndfile.read(16)
+        iv = os.urandom(16)
         aes = AES.new(self.aes_key, AES.MODE_CBC, iv)
         return iv, aes.encrypt(pkcs5_pad(content))
 
@@ -248,7 +242,7 @@ class BugBuzz(bdb.Bdb, object):
                 )
             except (KeyboardInterrupt, SystemExit):
                 raise
-            except Queue.Empty:
+            except queue.Queue.Empty:
                 continue
         cmd_type = cmd['type']
         if cmd_type == 'return':

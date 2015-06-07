@@ -1,10 +1,18 @@
 from __future__ import unicode_literals
 
 import pytest
+from builtins import bytes
 from Crypto.Cipher import AES
 
 from bugbuzz import BugBuzzClient
-from bugbuzz import pkcs5_unpad
+
+
+def pkcs5_unpad(data):
+    """Do PKCS5 unpadding to data and return
+
+    """
+    data_bytes = bytes(data)
+    return data_bytes[0:-data_bytes[-1]]
 
 
 @pytest.fixture

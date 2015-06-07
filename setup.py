@@ -43,7 +43,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'pycrypto',
-        'six',
+        'future',
     ],
     extras_require=dict(
         tests=tests_require,
