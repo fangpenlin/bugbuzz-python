@@ -28,17 +28,19 @@ def bugbuzz_dbg(
 
 def test_set_trace(mocker, bugbuzz_dbg):
     mocker.patch('webbrowser.open_new_tab')
+    base_url = bugbuzz_dbg.client.base_url
 
     # post continue command
     def post_continue():
         time.sleep(3)
         url = urlparse.urljoin(
-            bugbuzz_dbg.base_url,
+            base_url,
             '/sessions/{}/actions/continue'.format(
                 bugbuzz_dbg.client.session_id
             ),
         )
-        requests.post(url)
+        resp = requests.post(url)
+        resp.raise_for_status()
 
     thread = threading.Thread(target=post_continue)
     thread.daemon = True
@@ -47,11 +49,9 @@ def test_set_trace(mocker, bugbuzz_dbg):
     # TODO: set a timeout here?
     bugbuzz_dbg.set_trace(sys._getframe())
 
-    url = urlparse.urljoin(
-        bugbuzz_dbg.base_url,
-        '/sessions/{}'.format(bugbuzz_dbg.client.session_id),
-    )
+    sid = bugbuzz_dbg.client.session_id
+    url = urlparse.urljoin(base_url, '/sessions/{}'.format(sid))
     resp = requests.get(url)
     session = resp.json()['session']
     assert len(session['files']) == 1
-    assert len(session['breaks']) == 1
+    assert len(session['breaks']) == 2
