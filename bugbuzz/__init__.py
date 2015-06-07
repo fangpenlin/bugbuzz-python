@@ -192,7 +192,13 @@ class BugBuzz(bdb.Bdb, object):
             return self.uploaded_sources[filename]
         logger.info('Uploading %s', filename)
         source_lines, _ = inspect.findsource(frame.f_code)
-        source_lines = map(lambda line: line.encode('utf8'), source_lines)
+        if source_lines:
+            first_line = source_lines[0]
+            if not isinstance(first_line, bytes):
+                source_lines = map(
+                    lambda line: line.encode('utf8'),
+                    source_lines,
+                )
         uploaded = self.client.upload_source(
             filename=filename,
             content=b''.join(source_lines),
