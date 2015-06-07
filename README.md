@@ -27,7 +27,7 @@ then insert following lines in your code to debug
 import bugbuzz; bugbuzz.set_trace()
 ```
 
-# Security concern
+# Security concerns
 
 As bugbuzz providing debugging in a software-as-service manner, all source code and local variables needed will be uploaded to the server. However, when a debugging session created, a random secret access key will be generated, and used for encryping all source code and local variables. The access key will be passed to dashboard as a part of hash tag like this
 
