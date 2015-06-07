@@ -124,6 +124,7 @@ class BugBuzzClient(object):
             ),
         )
         resp.raise_for_status()
+        return resp.json()['break']
 
     def upload_source(self, filename, content):
         """Uplaod source code to server
