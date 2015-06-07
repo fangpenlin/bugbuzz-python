@@ -1,2 +1,6 @@
 include README.md LICENSE 
 recursive-include bugbuzz/packages/requests *.pem
+recursive-exclude tests *
+# Heck! wheel doesn't respec any exclude statement, let's remove tests
+# manuall while deplying.
+# ref: https://bitbucket.org/pypa/wheel/issue/99/cannot-exclude-directory
