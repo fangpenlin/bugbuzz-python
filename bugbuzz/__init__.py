@@ -1,4 +1,8 @@
+from __future__ import print_function
 from __future__ import unicode_literals
+
+from future.standard_library import install_aliases
+install_aliases()
 
 import base64
 import bdb
@@ -6,14 +10,12 @@ import inspect
 import json
 import logging
 import os
-import Queue
 import sys
-import urllib
-import urlparse
 import uuid
 import webbrowser
+import queue
+from urllib import parse as urlparse
 
-from Crypto import Random
 from Crypto.Cipher import AES
 
 from .packages import pubnub
@@ -26,22 +28,12 @@ __version__ = '0.0.3'
 BLOCK_SIZE = 16
 
 
-def pkcs5_pad(string):
-    """Do PKCS5 padding to string and return
+def pkcs5_pad(data):
+    """Do PKCS5 padding to data and return
 
     """
-    return (
-        string +
-        (BLOCK_SIZE - len(string) % BLOCK_SIZE) *
-        chr(BLOCK_SIZE - len(string) % BLOCK_SIZE)
-    )
-
-
-def pkcs5_unpad(string):
-    """Do PKCS5 unpadding to string and return
-
-    """
-    return string[0:-ord(string[-1])]
+    remain = BLOCK_SIZE - len(data) % BLOCK_SIZE
+    return data + (remain * chr(remain).encode('latin1'))
 
 
 class BugBuzzClient(object):
@@ -61,10 +53,9 @@ class BugBuzzClient(object):
         # last event timestamp
         self.last_timestamp = None
         # thread for polling events from server
-        self.cmd_queue = Queue.Queue()
+        self.cmd_queue = queue.Queue()
         # generate AES encryption key
-        self.rndfile = Random.new()
-        self.aes_key = self.rndfile.read(32)
+        self.aes_key = os.urandom(32)
 
     def _api_url(self, path):
         """API URL for path
@@ -76,14 +67,17 @@ class BugBuzzClient(object):
         """Encrypt a given content and return (iv, encrypted content)
 
         """
-        iv = self.rndfile.read(16)
+        from builtins import bytes
+        if not isinstance(content, bytes):
+            raise TypeError('Content needs to be bytes')
+        iv = os.urandom(16)
         aes = AES.new(self.aes_key, AES.MODE_CBC, iv)
         return iv, aes.encrypt(pkcs5_pad(content))
 
     def start(self):
         # validation code is for validating given access key correct or not
         validation_code = uuid.uuid4().hex
-        iv, encrypted_code = self.encrypt(validation_code)
+        iv, encrypted_code = self.encrypt(validation_code.encode('latin1'))
         # talk to server, register debugging session
         resp = self.req_session.post(
             self._api_url('sessions'),
@@ -117,7 +111,7 @@ class BugBuzzClient(object):
         """
         logger.info('Add break lineno=%s, file_id=%s', lineno, file_id)
         url = self._api_url('sessions/{}/breaks'.format(self.session_id))
-        iv, encrpyted = self.encrypt(json.dumps(local_vars))
+        iv, encrpyted = self.encrypt(json.dumps(local_vars).encode('latin1'))
         resp = self.req_session.post(
             url,
             dict(
@@ -176,7 +170,7 @@ class BugBuzz(bdb.Bdb, object):
                 raise
             except Exception:
                 return '<Error>'
-        return dict((key, strip(value)) for key, value in vars.iteritems())
+        return dict((key, strip(value)) for key, value in vars.items())
 
     def __init__(self, base_url, dashboard_url):
         bdb.Bdb.__init__(self)
@@ -192,11 +186,12 @@ class BugBuzz(bdb.Bdb, object):
 
         """
         # TODO: what if the filename is not unicode?
-        filename = unicode(frame.f_code.co_filename)
+        filename = str(frame.f_code.co_filename)
         if filename in self.uploaded_sources:
             return self.uploaded_sources[filename]
         logger.info('Uploading %s', filename)
         source_lines, _ = inspect.findsource(frame.f_code)
+        source_lines = map(lambda line: line.encode('utf8'), source_lines)
         uploaded = self.client.upload_source(
             filename=filename,
             content=b''.join(source_lines),
@@ -212,11 +207,11 @@ class BugBuzz(bdb.Bdb, object):
             self.dashboard_url,
             '/#/sessions/{}?{}'.format(
                 self.client.session_id,
-                urllib.urlencode(dict(access_key=access_key)),
+                urlparse.urlencode(dict(access_key=access_key)),
             )
         )
-        print >>sys.stderr, 'Access Key:', access_key
-        print >>sys.stderr, 'Dashboard URL:', session_url
+        print('Access Key:', access_key, file=sys.stderr)
+        print('Dashboard URL:', session_url, file=sys.stderr)
         webbrowser.open_new_tab(session_url)
         file_ = self.upload_source(self.current_frame)
         # TODO: handle filename is None or other situations?
@@ -248,7 +243,7 @@ class BugBuzz(bdb.Bdb, object):
                 )
             except (KeyboardInterrupt, SystemExit):
                 raise
-            except Queue.Empty:
+            except queue.Empty:
                 continue
         cmd_type = cmd['type']
         if cmd_type == 'return':
