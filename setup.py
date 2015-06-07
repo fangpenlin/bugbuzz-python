@@ -37,7 +37,7 @@ setup(
     keywords='debugger debug pdb',
     license='MIT',
     version=version,
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     package_data={'': ['LICENSE'], 'bugbuzz/packages/requests': ['*.pem']},
     include_package_data=True,
     zip_safe=False,
