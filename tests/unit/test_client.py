@@ -4,7 +4,7 @@ import pytest
 from Crypto.Cipher import AES
 
 from ..helpers import pkcs5_unpad
-from bugbuzz import BugBuzzClient
+from bugbuzz.client import BugBuzzClient
 
 
 @pytest.fixture

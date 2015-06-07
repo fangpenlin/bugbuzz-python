@@ -10,7 +10,7 @@ from urllib import parse as urlparse
 import pytest
 from Crypto.Cipher import AES
 
-from bugbuzz import BugBuzzClient
+from bugbuzz.client import BugBuzzClient
 from bugbuzz.packages import requests
 from ..helpers import pkcs5_unpad
 

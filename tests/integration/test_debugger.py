@@ -11,7 +11,7 @@ from urllib import parse as urlparse
 
 import pytest
 
-from bugbuzz import BugBuzz
+from bugbuzz.debugger import BugBuzz
 from bugbuzz.packages import requests
 
 # just a dummy unicode string, to see if we can handle unicode correctly
