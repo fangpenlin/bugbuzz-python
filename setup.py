@@ -5,8 +5,8 @@ from setuptools import setup, find_packages
 
 version = '0.0.0'
 try:
-    import bugbuzz
-    version = bugbuzz.__version__
+    from bugbuzz import __version__
+    version = __version__
 except ImportError:
     pass
 
@@ -26,6 +26,14 @@ setup(
     author_email='hello@victorlin.me',
     url='https://github.com/victorlin/bugbuzz-python',
     description='Easy to use web-base online debugger',
+    classifiers=[
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Intended Audience :: Developers",
+        "Programming Language :: Python",
+        "Topic :: Software Development :: Debuggers",
+    ],
     keywords='debugger debug pdb',
     license='MIT',
     version=version,
@@ -35,6 +43,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'pycrypto',
+        'six',
     ],
     extras_require=dict(
         tests=tests_require,
