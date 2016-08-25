@@ -6,7 +6,7 @@
 
 # Ember.js Dashboard project
 
-https://github.com/victorlin/bugbuzz-python
+https://github.com/victorlin/bugbuzz-dashboard
 
 # Dashboard shortcuts
 
