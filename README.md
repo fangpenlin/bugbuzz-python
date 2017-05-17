@@ -7,7 +7,7 @@
 # Relative projects
 
  - [Ember.js Dashboard project](https://github.com/victorlin/bugbuzz-dashboard)
- - [Backend API project](https://github.com/victorlin/bugbuzz-api)
+ - [Backend API server project](https://github.com/victorlin/bugbuzz-api)
 
 # Dashboard shortcuts
 
