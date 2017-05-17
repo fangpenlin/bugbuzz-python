@@ -4,9 +4,10 @@
 
 ![Bugbuzz demo](/screencast.gif?raw=true )
 
-# Ember.js Dashboard project
+# Relative projects
 
-https://github.com/victorlin/bugbuzz-dashboard
+[Ember.js Dashboard project](https://github.com/victorlin/bugbuzz-dashboard)
+[Backend API project](https://github.com/victorlin/bugbuzz-api)
 
 # Dashboard shortcuts
 
