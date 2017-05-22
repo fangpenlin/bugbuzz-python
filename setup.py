@@ -22,7 +22,7 @@ tests_require = [
 
 setup(
     name='bugbuzz',
-    author='Victor Lin',
+    author='Fang-Pen Lin',
     author_email='hello@fangpenlin.com',
     url='https://github.com/fangpenlin/bugbuzz-python',
     description='Easy to use web-base online debugger',
