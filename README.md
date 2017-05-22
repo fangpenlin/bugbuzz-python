@@ -72,6 +72,20 @@ python demo.py
 
 It will open a new tab in your browser for debugging.
 
+# Run with local API server and dashboard instead
+
+By default, bugbuzz uses `bugbuzz-api.herokuapp.com` as the API server and `dashboard.bugbuzz.io` as the dashboard. To change this behavior, you can specify environment variables
+
+ - **BUGBUZZ_API**: URL for the API server
+ - **BUGBUZZ_DASHBOARD**: URL for the dashboard 
+
+For example, you are running API server and the dashboard locally at `http://localhost:9090` and `http://localhost:4200`, then you can run bugbuzz like this
+
+```bash
+BUGBUZZ_API='http://localhost:9090' BUGBUZZ_DASHBOARD='http://localhost:4200' python demo.py
+```
+
+
 # Notice
 
  This is just a prototype, use it at your own risk
