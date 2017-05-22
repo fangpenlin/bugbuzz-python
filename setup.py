@@ -1,7 +1,7 @@
 from ez_setup import use_setuptools
 use_setuptools()
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages  # noqa: E402
 
 version = '0.0.0'
 try:
@@ -23,8 +23,8 @@ tests_require = [
 setup(
     name='bugbuzz',
     author='Victor Lin',
-    author_email='hello@victorlin.me',
-    url='https://github.com/victorlin/bugbuzz-python',
+    author_email='hello@fangpenlin.com',
+    url='https://github.com/fangpenlin/bugbuzz-python',
     description='Easy to use web-base online debugger',
     classifiers=[
         "Programming Language :: Python :: 2",
