@@ -1,6 +1,6 @@
 # Bugbuzz - easy to use online debugger
 
-[![Build Status](https://travis-ci.org/victorlin/bugbuzz-python.svg?branch=master)](https://travis-ci.org/victorlin/bugbuzz-python)
+[![Build Status](https://travis-ci.org/fangpenlin/bugbuzz-python.svg?branch=master)](https://travis-ci.org/fangpenlin/bugbuzz-python)
 
 ![Bugbuzz demo](/screencast.gif?raw=true )
 
