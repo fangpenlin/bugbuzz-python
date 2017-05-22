@@ -4,16 +4,16 @@ from __future__ import unicode_literals
 from future.standard_library import install_aliases
 install_aliases()
 
-import base64
-import bdb
-import inspect
-import logging
-import sys
-import webbrowser
-import queue
-from urllib import parse as urlparse
+import base64  # noqa: E402
+import bdb  # noqa: E402
+import inspect  # noqa: E402
+import logging  # noqa: E402
+import sys  # noqa: E402
+import webbrowser  # noqa: E402
+import queue  # noqa: E402
+from urllib import parse as urlparse  # noqa: E402
 
-from .client import BugBuzzClient
+from .client import BugBuzzClient  # noqa: E402
 
 
 logger = logging.getLogger(__name__)

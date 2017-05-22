@@ -4,17 +4,17 @@ from __future__ import unicode_literals
 from future.standard_library import install_aliases
 install_aliases()
 
-import json
-import logging
-import os
-import uuid
-import queue
-from urllib import parse as urlparse
+import json  # noqa: E402
+import logging  # noqa: E402
+import os  # noqa: E402
+import uuid  # noqa: E402
+import queue  # noqa: E402
+from urllib import parse as urlparse  # noqa: E402
 
-from Crypto.Cipher import AES
+from Crypto.Cipher import AES  # noqa: E402
 
-from .packages import pubnub
-from .packages import requests
+from .packages import pubnub  # noqa: E402
+from .packages import requests  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
