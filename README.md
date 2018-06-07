@@ -47,7 +47,7 @@ For more details about security topic, you can also read my article [Anonymous c
 To run our demo
 
 ```bash
-git clone --recursive git@github.com:victorlin/bugbuzz-python.git
+git clone --recursive git@github.com:fangpenlin/bugbuzz-python.git
 ```
 
 install the project
